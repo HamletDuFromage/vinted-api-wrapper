@@ -23,17 +23,21 @@ class Items:
 
         params = self.parseUrl(url, nbrItems, page, time)
         #url = f"{Urls.VINTED_API_URL}/{Urls.VINTED_PRODUCTS_ENDPOINT}"
-        url = f"https://{locale}{Urls.VINTED_API_URL}/{Urls.VINTED_PRODUCTS_ENDPOINT}"
+        url = f"https://api.vinted.com{Urls.VINTED_API_URL}/{Urls.VINTED_PRODUCTS_ENDPOINT}"
 
         try:
             response = requester.get(url=url, params=params)
             response.raise_for_status()
             items = response.json()
-            items = items["items"]
-            if not json:
-                return [Item(_item) for _item in items]
-            else:
-                return items
+            if "items" in items:
+                items = items["items"]
+                if not json:
+                    return [Item(_item) for _item in items]
+                else:
+                    return items
+            elif "filters" in items:
+                return items["filters"] if not json else items
+            return items
 
         except HTTPError as err:
             raise err
@@ -58,20 +62,20 @@ class Items:
             "catalog_ids": ",".join(
                 map(str, [tpl[1] for tpl in querys if tpl[0] == "catalog[]"])
             ),
-            "color_ids": ",".join(
-                map(str, [tpl[1] for tpl in querys if tpl[0] == "color_ids[]"])
+            "attribute_ids[color]": ",".join(
+                map(str, [tpl[1] for tpl in querys if tpl[0] in ("color_ids[]", "attribute_ids[color]", "attribute_ids%5Bcolor%5D")])
             ),
-            "brand_ids": ",".join(
-                map(str, [tpl[1] for tpl in querys if tpl[0] == "brand_ids[]"])
+            "attribute_ids[brand]": ",".join(
+                map(str, [tpl[1] for tpl in querys if tpl[0] in ("brand_ids[]", "attribute_ids[brand]", "attribute_ids%5Bbrand%5D")])
             ),
-            "size_ids": ",".join(
-                map(str, [tpl[1] for tpl in querys if tpl[0] == "size_ids[]"])
+            "attribute_ids[size]": ",".join(
+                map(str, [tpl[1] for tpl in querys if tpl[0] in ("size_ids[]", "attribute_ids[size]", "attribute_ids%5Bsize%5D")])
             ),
-            "material_ids": ",".join(
-                map(str, [tpl[1] for tpl in querys if tpl[0] == "material_ids[]"])
+            "attribute_ids[material]": ",".join(
+                map(str, [tpl[1] for tpl in querys if tpl[0] in ("material_ids[]", "attribute_ids[material]", "attribute_ids%5Bmaterial%5D")])
             ),
-            "status_ids": ",".join(
-                map(str, [tpl[1] for tpl in querys if tpl[0] == "status[]"])
+            "attribute_ids[status]": ",".join(
+                map(str, [tpl[1] for tpl in querys if tpl[0] in ("status[]", "attribute_ids[status]", "attribute_ids%5Bstatus%5D")])
             ),
             "country_ids": ",".join(
                 map(str, [tpl[1] for tpl in querys if tpl[0] == "country_ids[]"])
@@ -99,4 +103,5 @@ class Items:
             "time": time
         }
 
-        return params
+        return {k: v for k, v in params.items() if v != "" and v is not None}
+

@@ -2,4 +2,8 @@
 .ipynb_checkpoints
 .vscode
 testApi.ipynb
-venv/**/*
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+

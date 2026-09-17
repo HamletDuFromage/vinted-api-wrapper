@@ -14,7 +14,6 @@ class Requester:
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",
             "Referer": "https://www.google.com/",
             "Connection": "keep-alive",
-            "Host": "www.vinted.fr",
         }
         self.VINTED_AUTH_URL = "https://www.vinted.fr/"
         self.MAX_RETRIES = 3
@@ -27,13 +26,14 @@ class Requester:
             Set the locale of the requester.
             :param locale: str
         """
+        if not locale or locale == "api.vinted.com":
+            return
         self.VINTED_AUTH_URL = f"https://{locale}/"
         self.HEADER = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",
             "Referer": "https://www.google.com/",
             "Connection": "keep-alive",
-            "Host": f"{locale}",
         }
         self.session.headers.update(self.HEADER)
 
@@ -48,9 +48,11 @@ class Requester:
         tried = 0
         while tried < self.MAX_RETRIES:
             tried += 1
+            if "Authorization" not in self.session.headers:
+                self.setCookies()
             with self.session.get(url, params=params) as response:
 
-                if response.status_code == 401 and tried < self.MAX_RETRIES:
+                if response.status_code in (401, 403) and tried < self.MAX_RETRIES:
                     print(f"Cookies invalid retrying {tried}/{self.MAX_RETRIES}")
                     self.setCookies()
 
@@ -70,7 +72,10 @@ class Requester:
 
         try:
 
-            self.session.head(self.VINTED_AUTH_URL)
+            self.session.get(self.VINTED_AUTH_URL)
+            token = self.session.cookies.get("access_token_web")
+            if token:
+                self.session.headers["Authorization"] = f"Bearer {token}"
             print("Cookies set!")
 
         except Exception as e:
