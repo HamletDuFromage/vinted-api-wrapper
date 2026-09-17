@@ -55,8 +55,8 @@ class Items:
             "search_text": "+".join(
                 map(str, [tpl[1] for tpl in querys if tpl[0] == "search_text"])
             ),
-            "catalog_ids": ",".join(
-                map(str, [tpl[1] for tpl in querys if tpl[0] == "catalog[]"])
+            "attribute_ids[catalog]": ",".join(
+                map(str, [tpl[1] for tpl in querys if tpl[0] in ("catalog[]", "attribute_ids[catalog]", "attribute_ids%5Bcatalog%5D")])
             ),
             "attribute_ids[color]": ",".join(
                 map(str, [tpl[1] for tpl in querys if tpl[0] in ("color_ids[]", "attribute_ids[color]", "attribute_ids%5Bcolor%5D")])
@@ -72,6 +72,9 @@ class Items:
             ),
             "attribute_ids[status]": ",".join(
                 map(str, [tpl[1] for tpl in querys if tpl[0] in ("status[]", "attribute_ids[status]", "attribute_ids%5Bstatus%5D")])
+            ),
+            "attribute_ids[patterns]": ",".join(
+                map(str, [tpl[1] for tpl in querys if tpl[0] in ("pattern_ids[]", "patterns[]", "attribute_ids[patterns]", "attribute_ids%5Bpatterns%5D", "attribute_ids[pattern]", "attribute_ids%5Bpattern%5D")])
             ),
             "country_ids": ",".join(
                 map(str, [tpl[1] for tpl in querys if tpl[0] == "country_ids[]"])
