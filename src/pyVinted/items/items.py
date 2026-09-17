@@ -28,16 +28,12 @@ class Items:
         try:
             response = requester.get(url=url, params=params)
             response.raise_for_status()
-            items = response.json()
-            if "items" in items:
-                items = items["items"]
-                if not json:
-                    return [Item(_item) for _item in items]
-                else:
-                    return items
-            elif "filters" in items:
-                return items["filters"] if not json else items
-            return items
+            data = response.json()
+            items = data.get("items", [])
+            if not json:
+                return [Item(_item) for _item in items]
+            else:
+                return items
 
         except HTTPError as err:
             raise err
